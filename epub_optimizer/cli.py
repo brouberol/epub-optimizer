@@ -83,7 +83,7 @@ class EpubOptimizer:
         with zipfile.ZipFile(
             self.output_filepath.absolute(), "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9
         ) as zf:
-            for dirname, subdirs, files in os.walk(self.working_dir):
+            for dirname, subdirs, files in os.walk("."):
                 zf.write(dirname)
                 for filename in files:
                     zf.write(os.path.join(dirname, filename))
