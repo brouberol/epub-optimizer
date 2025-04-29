@@ -169,10 +169,11 @@ class EpubOptimizer:
 
 def main():
     args = parse_args()
+    input = args.input.absolute()
     output = args.output.absolute()
     with cwd_temp_dir() as working_dir:
         EpubOptimizer(
-            epub_filepath=args.input,
+            epub_filepath=input,
             output_filepath=output,
             working_dir=working_dir,
             verbose=args.verbose,
