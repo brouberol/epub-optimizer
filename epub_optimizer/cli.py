@@ -65,7 +65,7 @@ class EpubOptimizer:
         self.xhtml_dir = self.oebps_dir / "xhtml"
         self.images_dir = self.oebps_dir / "images"
         self.fonts_dir = self.oebps_dir / "fonts"
-        self.styles_dir = self.oebps_dir / "styles"
+        self.style_file = self.oebps_dir / "style.css"
         self.steps = [
             self.convert_png_images_to_black_and_white_jpg,
             self.remove_unused_fonts,
@@ -132,9 +132,8 @@ class EpubOptimizer:
     def remove_unused_fonts(self):
         for font_image_path in self.fonts_dir.glob("*"):
             relative_font_path = os.path.join("fonts", font_image_path.name)
-            for style_file in self.styles_dir.glob("*"):
-                if relative_font_path in style_file.read_text():
-                    break
+            if relative_font_path in self.style_file.read_text():
+                break
             else:
                 print(f"Deleting {font_image_path} as it was not found anywhere in the book")
                 font_image_path.unlink()
