@@ -67,7 +67,7 @@ class EpubOptimizer:
         self.fonts_dir = self.oebps_dir / "fonts"
         self.style_file = self.oebps_dir / "style.css"
         self.steps = [
-            self.convert_png_images_to_black_and_white_jpg,
+            self.convert_images_to_black_and_white_jpg,
             self.remove_unused_fonts,
             self.run_jpegoptim,
         ]
@@ -111,23 +111,27 @@ class EpubOptimizer:
                 f.write(text)
         return found
 
-    def convert_png_images_to_black_and_white_jpg(self):
+    def convert_images_to_black_and_white_jpg(self):
         replacements = {}
-        for png_image_path in self.images_dir.glob("*.png"):
-            relative_png_image_path = os.path.join("../images", png_image_path.name)
-            relative_jpg_image_path = relative_png_image_path.replace(".png", ".jpg")
-            replacements[relative_png_image_path] = relative_jpg_image_path
-            convert_format(
-                input=png_image_path,
-                output=png_image_path.parent / png_image_path.name.replace(".png", ".jpg"),
-            )
-            png_image_path.unlink()
-        images_found_in_xhtml_files = self.replace_in_xhtml_files(replacements)
-        for image, found in images_found_in_xhtml_files.items():
-            if not found:
-                img_file = self.images_dir / Path(image).name
-                print(f"Deleting {img_file} as it was not found anywhere in the book")
-                img_file.unlink()
+        for extension in ('png', 'gif'):
+            for image_path in self.images_dir.glob(f"*.{extension}"):
+                relative_image_path = os.path.join("../images", image_path.name)
+                relative_jpg_image_path = relative_image_path.replace(f".{extension}", ".jpg")
+                replacements[relative_image_path] = relative_jpg_image_path
+                convert_format(
+                    input=image_path,
+                    output=image_path.parent / image_path.name.replace(f".{extension}", ".jpg"),
+                )
+                image_path.unlink()
+            images_found_in_xhtml_files = self.replace_in_xhtml_files(replacements)
+            for image, found in images_found_in_xhtml_files.items():
+                if not found:
+                    img_file = self.images_dir / Path(image).name
+                    print(f"Deleting {img_file} as it was not found anywhere in the book")
+                    try:
+                        img_file.unlink()
+                    except FileNotFoundError:
+                        ...
 
     def remove_unused_fonts(self):
         for font_image_path in self.fonts_dir.glob("*"):
